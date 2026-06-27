@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Business Partner Verification Form</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f0f0ee;--surface:#fff;--surface-1:#f7f7f5;
+    --border:rgba(0,0,0,0.09);--border-strong:rgba(0,0,0,0.16);
+    --text:#1a1a18;--text-2:#55554f;--text-3:#99998f;
+    --accent:#185fa5;--accent-bg:#e6f1fb;--accent-bd:#b5d4f4;
+    --ok:#0f6e56;--ok-bg:#e1f5ee;--ok-bd:#5dcaa5;
+    --err:#a32d2d;--font:'Segoe UI',system-ui,-apple-system,sans-serif;--r:8px;
+  }
+  @media(prefers-color-scheme:dark){:root{
+    --bg:#181816;--surface:#242422;--surface-1:#1e1e1c;
+    --border:rgba(255,255,255,0.09);--border-strong:rgba(255,255,255,0.16);
+    --text:#f0f0ee;--text-2:#aaaaaa;--text-3:#666660;
+    --accent:#85b7eb;--accent-bg:#042c53;--accent-bd:#185fa5;
+    --ok:#5dcaa5;--ok-bg:#04342c;--ok-bd:#0f6e56;--err:#f09595;
+  }}
+
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:2.5rem 1.5rem 6rem}
+  .wrap{max-width:960px;margin:0 auto}
+
+  /* ── Header ── */
+  .hdr{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+       margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:.5px solid var(--border-strong)}
+  .hdr-l .eye{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px}
+  .hdr-l h1{font-size:22px;font-weight:500}
+  .hdr-r{font-size:12px;color:var(--text-3)}
+  .hdr-r span{color:var(--err)}
+
+  /* ── Webhook badge ── */
+  .wh-badge{display:flex;align-items:center;gap:10px;padding:11px 16px;margin-bottom:1.5rem;
+            background:var(--accent-bg);border:.5px solid var(--accent-bd);border-radius:10px;font-size:13px;color:var(--accent)}
+  .wh-badge i{font-size:17px;flex-shrink:0}
+  .wh-badge code{font-family:var(--font);font-size:12px;opacity:.8;word-break:break-all}
+
+  /* ── Section cards ── */
+  .card{background:var(--surface);border:.5px solid var(--border);border-radius:12px;
+        padding:1.75rem;margin-bottom:1.5rem;transition:border-color .2s;
+        animation:up .28s ease both}
+  .card:hover{border-color:var(--border-strong)}
+  .card:nth-child(1){animation-delay:.04s}.card:nth-child(2){animation-delay:.08s}
+  .card:nth-child(3){animation-delay:.12s}.card:nth-child(4){animation-delay:.16s}
+  .card:nth-child(5){animation-delay:.20s}.card:nth-child(6){animation-delay:.24s}
+  @keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  .card-hd{display:flex;align-items:center;gap:8px;
+           padding-bottom:1rem;margin-bottom:1.25rem;border-bottom:.5px solid var(--border)}
+  .card-hd i{font-size:17px;color:var(--accent)}
+  .card-hd h2{font-size:15px;font-weight:500}
+
+  /* ── Grid ── */
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem 2rem}
+  .span2{grid-column:span 2}
+  @media(max-width:620px){.g2{grid-template-columns:1fr}.span2{grid-column:span 1}}
+
+  /* ── Fields ── */
+  .f{display:flex;flex-direction:column;gap:5px}
+  .f label{font-size:12px;color:var(--text-2);display:flex;align-items:center;gap:2px;
+           user-select:none;transition:color .15s;cursor:default}
+  .f label .r{color:var(--err);font-size:11px;margin-left:1px}
+  .f input,.f select{
+    width:100%;padding:8px 11px;font-size:13px;
+    border:.5px solid var(--border-strong);border-radius:var(--r);
+    background:var(--surface-1);color:var(--text);outline:none;
+    font-family:var(--font);transition:border-color .18s,box-shadow .18s;
+    -webkit-appearance:none;appearance:none}
+  .f select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23999' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+  .f input:hover:not(:focus),.f select:hover:not(:focus){border-color:var(--accent-bd)}
+  .f input:focus,.f select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+  .f input::placeholder{color:var(--text-3)}
+  .f.err input,.f.err select{border-color:var(--err)}
+  .f.err label{color:var(--err)}
+  .emsg{font-size:11px;color:var(--err);display:none}
+  .f.err .emsg{display:block}
+
+  /* ── Upload zone ── */
+  .upl{display:flex;align-items:center;gap:10px;padding:10px 14px;
+       border:.5px dashed var(--border-strong);border-radius:var(--r);
+       background:var(--surface-1);cursor:pointer;transition:border-color .2s,background .2s}
+  .upl:hover{border-color:var(--accent);background:var(--accent-bg)}
+  .upl i{font-size:16px;color:var(--text-3);flex-shrink:0}
+  .upl:hover i{color:var(--accent)}
+  .upl span{font-size:13px;color:var(--text-2)}
+  .upl input{display:none}
+
+  /* ── Submit bar ── */
+  .sub-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+           gap:1rem;margin-top:1.75rem;padding-top:1.25rem;border-top:.5px solid var(--border-strong)}
+  .sub-info{font-size:12px;color:var(--text-3)}
+  .sub-info span{color:var(--err)}
+  .btn{padding:10px 26px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);
+       font-size:14px;font-weight:500;font-family:var(--font);cursor:pointer;
+       display:inline-flex;align-items:center;gap:8px;transition:opacity .15s,transform .1s}
+  .btn:hover{opacity:.88}
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+  /* ── Success overlay ── */
+  .success{display:none;flex-direction:column;align-items:center;justify-content:center;
+           text-align:center;padding:4rem 2rem;gap:1rem;
+           background:var(--surface);border:.5px solid var(--border);border-radius:12px;margin-top:2rem}
+  .success.show{display:flex;animation:up .35s ease}
+  .success-ico{width:64px;height:64px;border-radius:50%;background:var(--ok-bg);
+               border:.5px solid var(--ok-bd);display:flex;align-items:center;justify-content:center;margin-bottom:.5rem}
+  .success-ico i{font-size:30px;color:var(--ok)}
+  .success h2{font-size:20px;font-weight:500}
+  .success p{font-size:14px;color:var(--text-2);max-width:400px;line-height:1.7}
+  .success pre{
+    background:var(--surface-1);border:.5px solid var(--border-strong);border-radius:var(--r);
+    padding:14px 16px;font-size:11px;color:var(--text-2);text-align:left;
+    max-width:600px;width:100%;overflow-x:auto;white-space:pre-wrap;word-break:break-all;
+    max-height:260px;overflow-y:auto;margin-top:.5rem}
+
+  /* ── Error banner ── */
+  .err-banner{display:none;align-items:flex-start;gap:10px;padding:12px 16px;margin-bottom:1.5rem;
+              background:var(--ok-bg);border:.5px solid var(--err);border-radius:10px;
+              font-size:13px;color:var(--err);word-break:break-all}
+  .err-banner.show{display:flex}
+  .err-banner i{font-size:17px;flex-shrink:0;margin-top:1px}
+
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap" id="mainWrap">
+
+  <!-- Webhook status badge -->
+  <div class="wh-badge">
+    <i class="ti ti-webhook"></i>
+    <span>POSTing to n8n webhook: <code id="whDisplay"></code></span>
+  </div>
+
+  <!-- Error banner -->
+  <div class="err-banner" id="errBanner">
+    <i class="ti ti-alert-circle"></i>
+    <span id="errBannerMsg"></span>
+  </div>
+
+  <!-- Page header -->
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="eye">Vendor Onboarding</div>
+      <h1>Business Partner Verification Form</h1>
+    </div>
+    <div class="hdr-r"><span>*</span> Required fields are mandatory</div>
+  </div>
+
+  <!-- ── Basic Information ── -->
+  <div class="card">
+    <div class="card-hd"><i class="ti ti-building"></i><h2>Basic Information</h2></div>
+    <div class="g2">
+      <div class="f" id="fw-industry">
+        <label>Industry <span class="r">*</span></label>
+        <input type="text" name="industry" placeholder="e.g. Manufacturing, Technology"/>
+        <span class="emsg">Industry is required</span>
+      </div>
+      <div class="f" id="fw-bpcat">
+        <label>Business Partner Category <span class="r">*</span></label>
+        <input type="text" name="businessPartnerCategory" placeholder="e.g. Vendor, Supplier"/>
+        <span class="emsg">Category is required</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Address ── -->
+  <div class="card">
+    <div class="card-hd"><i class="ti ti-map-pin"></i><h2>Address</h2></div>
+    <div class="g2">
+      <div class="f" id="fw-street">
+        <label>Street <span class="r">*</span></label>
+        <input type="text" name="street" placeholder="Street name"/>
+        <span class="emsg">Street is required</span>
+      </div>
+      <div class="f">
+        <label>State <span class="r">*</span></label>
+        <input type="text" name="state" placeholder="State / Province"/>
+      </div>
+      <div class="f">
+        <label>House Number <span class="r">*</span></label>
+        <input type="text" name="houseNumber" placeholder="Building / Unit no."/>
+      </div>
+      <div class="f">
+        <label>Validate From</label>
+        <input type="date" name="addressValidateFrom"/>
+      </div>
+      <div class="f">
+        <label>City Postal Code <span class="r">*</span></label>
+        <input type="text" name="cityPostalCode" placeholder="ZIP / PIN code"/>
+      </div>
+      <div class="f">
+        <label>Validate To</label>
+        <input type="date" name="addressValidateTo" value="9999-12-31"/>
+      </div>
+      <div class="f">
+        <label>City <span class="r">*</span></label>
+        <input type="text" name="city" placeholder="City"/>
+      </div>
+      <div class="f">
+        <label>Post Box</label>
+        <input type="text" name="postBox" placeholder="P.O. Box number"/>
+      </div>
+      <div class="f">
+        <label>Country <span class="r">*</span></label>
+        <input type="text" name="country" placeholder="Country"/>
+      </div>
+      <div class="f">
+        <label>Post Office Postal Code</label>
+        <input type="text" name="postOfficePostalCode" placeholder="PO postal code"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Preference ── -->
+  <div class="card">
+    <div class="card-hd"><i class="ti ti-adjustments-horizontal"></i><h2>Preference</h2></div>
+    <div class="g2">
+      <div class="f">
+        <label>Language <span class="r">*</span></label>
+        <input type="text" name="language" placeholder="e.g. English, Tamil"/>
+      </div>
+      <div class="f">
+        <label>Preferred Communication <span class="r">*</span></label>
+        <select name="preferredCommunication">
+          <option value="">Select method</option>
+          <option>Email</option><option>Phone</option><option>Fax</option><option>Post</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Communication ── -->
+  <div class="card">
+    <div class="card-hd"><i class="ti ti-message-dots"></i><h2>Communication</h2></div>
+    <div class="g2">
+      <div class="f" id="fw-email">
+        <label>E-Mail Address <span class="r">*</span></label>
+        <input type="email" name="emailAddress" placeholder="name@company.com"/>
+        <span class="emsg">Valid email address is required</span>
+      </div>
+      <div class="f">
+        <label>Telephone Number</label>
+        <input type="tel" name="telephoneNumber" placeholder="+91 00000 00000"/>
+      </div>
+      <div class="f" id="fw-mobile">
+        <label>Mobile Number <span class="r">*</span></label>
+        <input type="tel" name="mobileNumber" placeholder="+91 00000 00000"/>
+        <span class="emsg">Mobile number is required</span>
+      </div>
+      <div class="f">
+        <label>Fax</label>
+        <input type="text" name="fax" placeholder="Fax number"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bank Information ── -->
+  <div class="card">
+    <div class="card-hd"><i class="ti ti-credit-card"></i><h2>Bank Information</h2></div>
+    <div class="g2">
+      <div class="f" id="fw-bankCountry">
+        <label>Bank Country <span class="r">*</span></label>
+        <input type="text" name="bankCountry" placeholder="Country of bank"/>
+        <span class="emsg">Bank country is required</span>
+      </div>
+      <div class="f">
+        <label>Reference Details</label>
+        <input type="text" name="referenceDetails" placeholder="Reference / IBAN"/>
+      </div>
+      <div class="f" id="fw-bankName">
+        <label>Bank Name <span class="r">*</span></label>
+        <input type="text" name="bankName" placeholder="Full bank name"/>
+        <span class="emsg">Bank name is required</span>
+      </div>
+      <div class="f">
+        <label>Validate From</label>
+        <input type="date" name="bankValidateFrom"/>
+      </div>
+      <div class="f" id="fw-accHolder">
+        <label>Bank Account Holder Name <span class="r">*</span></label>
+        <input type="text" name="accountHolderName" placeholder="Account holder full name"/>
+        <span class="emsg">Account holder name is required</span>
+      </div>
+      <div class="f">
+        <label>Validate To</label>
+        <input type="date" name="bankValidateTo"/>
+      </div>
+      <div class="f">
+        <label>Control Key</label>
+        <input type="text" name="controlKey" placeholder="Bank control key"/>
+      </div>
+      <div class="f">
+        <label>Collection Authorization Indicator</label>
+        <input type="text" name="collectionAuthIndicator" placeholder="Y / N"/>
+      </div>
+      <div class="f span2">
+        <label>Attachments</label>
+        <label class="upl" for="bankFile">
+          <i class="ti ti-upload"></i>
+          <span id="bankFileName">Choose a file for upload…</span>
+          <input type="file" id="bankFile" name="bankAttachment"/>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tax ── -->
+  <div class="card">
+    <div class="card-hd"><i class="ti ti-receipt-tax"></i><h2>Tax</h2></div>
+    <div class="g2">
+      <div class="f" id="fw-taxType">
+        <label>Tax Type <span class="r">*</span></label>
+        <input type="text" name="taxType" placeholder="e.g. GST, VAT, TIN"/>
+        <span class="emsg">Tax type is required</span>
+      </div>
+      <div class="f">
+        <label>Tax Category</label>
+        <input type="text" name="taxCategory" placeholder="Tax category"/>
+      </div>
+      <div class="f" id="fw-taxNumber">
+        <label>Tax Number <span class="r">*</span></label>
+        <input type="text" name="taxNumber" placeholder="Registration / PAN number"/>
+        <span class="emsg">Tax number is required</span>
+      </div>
+      <div class="f">
+        <label>Tax Long Number</label>
+        <input type="text" name="taxLongNumber" placeholder="Extended tax number"/>
+      </div>
+      <div class="f span2">
+        <label>Attachments</label>
+        <label class="upl" for="taxFile">
+          <i class="ti ti-upload"></i>
+          <span id="taxFileName">Choose a file for upload…</span>
+          <input type="file" id="taxFile" name="taxAttachment"/>
+        </label>
+      </div>
+    </div>
+
+    <!-- Submit bar -->
+    <div class="sub-bar">
+      <div class="sub-info">All <span>*</span> fields must be filled before submitting</div>
+      <button class="btn" id="submitBtn" type="button" onclick="submitForm()">
+        <i class="ti ti-send"></i> Submit to n8n
+      </button>
+    </div>
+  </div>
+
+</div><!-- /mainWrap -->
+
+<!-- Success screen -->
+<div class="wrap">
+  <div class="success" id="successScreen">
+    <div class="success-ico"><i class="ti ti-circle-check"></i></div>
+    <h2>Submitted to n8n</h2>
+    <p>Your vendor application was posted to the webhook. The n8n workflow has received the data and is continuing.</p>
+    <pre id="payloadPreview"></pre>
+    <button class="btn" style="background:var(--ok);margin-top:.5rem" onclick="location.reload()">
+      <i class="ti ti-refresh"></i> Submit another
+    </button>
+  </div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────────────────────────
+  //  CONFIGURE YOUR N8N WEBHOOK URL HERE
+  // ─────────────────────────────────────────────────────────────────────────
+  const N8N_WEBHOOK_URL = 'https://sierradigital-nfr.app.n8n.cloud/webhook-test/vendor';
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // Show webhook URL in badge
+  document.getElementById('whDisplay').textContent = N8N_WEBHOOK_URL;
+
+  // File label updates
+  document.getElementById('bankFile').addEventListener('change', function () {
+    document.getElementById('bankFileName').textContent = this.files[0]?.name || 'Choose a file for upload…';
+  });
+  document.getElementById('taxFile').addEventListener('change', function () {
+    document.getElementById('taxFileName').textContent = this.files[0]?.name || 'Choose a file for upload…';
+  });
+
+  // ── Validation ────────────────────────────────────────────────────────────
+  // [wrapId, inputName, type]
+  const REQUIRED = [
+    ['fw-industry',    'industry',             'text'],
+    ['fw-bpcat',       'businessPartnerCategory','text'],
+    ['fw-street',      'street',               'text'],
+    ['fw-email',       'emailAddress',         'email'],
+    ['fw-mobile',      'mobileNumber',         'text'],
+    ['fw-bankCountry', 'bankCountry',          'text'],
+    ['fw-bankName',    'bankName',             'text'],
+    ['fw-accHolder',   'accountHolderName',    'text'],
+    ['fw-taxType',     'taxType',              'text'],
+    ['fw-taxNumber',   'taxNumber',            'text'],
+  ];
+
+  function validate() {
+    let ok = true;
+    REQUIRED.forEach(([wrapId, name, type]) => {
+      const wrap  = document.getElementById(wrapId);
+      const input = document.querySelector(`[name="${name}"]`);
+      if (!wrap || !input) return;
+      const val   = input.value.trim();
+      const valid = val !== '' && (type !== 'email' || /\S+@\S+\.\S+/.test(val));
+      wrap.classList.toggle('err', !valid);
+      if (!valid) {
+        ok = false;
+        input.addEventListener('input', () => wrap.classList.remove('err'), { once: true });
+      }
+    });
+    if (!ok) document.querySelector('.f.err')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return ok;
+  }
+
+  // ── Collect all named inputs → flat JSON ─────────────────────────────────
+  function collectPayload() {
+    const payload = {};
+    document.querySelectorAll('input[name], select[name]').forEach(el => {
+      if (el.type === 'file') return;          // skip file inputs
+      payload[el.name] = el.value.trim();
+    });
+    payload.submittedAt = new Date().toISOString();
+    return payload;
+  }
+
+  // ── Show / hide error banner ──────────────────────────────────────────────
+  function showError(msg) {
+    const b = document.getElementById('errBanner');
+    document.getElementById('errBannerMsg').textContent = msg;
+    b.classList.add('show');
+    b.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function clearError() { document.getElementById('errBanner').classList.remove('show'); }
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  async function submitForm() {
+    clearError();
+    if (!validate()) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Sending…';
+
+    const payload = collectPayload();
+
+    try {
+      const res = await fetch(N8N_WEBHOOK_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
+
+      // Success
+      document.getElementById('mainWrap').style.display = 'none';
+      const success = document.getElementById('successScreen');
+      document.getElementById('payloadPreview').textContent = JSON.stringify(payload, null, 2);
+      success.classList.add('show');
+
+    } catch (err) {
+      showError(`POST to n8n failed: ${err.message}`);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-send"></i> Submit to n8n';
+    }
+  }
+</script>
+</body>
+</html>
